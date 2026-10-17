@@ -1,0 +1,392 @@
+import React, { useState } from 'react';
+import { Camera, Mic, Video, Smartphone, Leaf, CheckCircle2, XCircle, RefreshCw, ChevronRight } from 'lucide-react';
+
+const EQUIPMENT_DATA = {
+  camera: {
+    title: 'Камера (Відео)',
+    icon: <Camera className="w-6 h-6 text-emerald-600" />,
+    items: [
+      { id: 'c1', name: 'Смартфон (вже є)', cost: 0, weight: 200, mobility: 10, desc: 'Ваш поточний телефон. Завжди під рукою.' },
+      { id: 'c2', name: 'Бюджетний смартфон', cost: 250, weight: 190, mobility: 10, desc: 'Окремий телефон виключно для зйомок.' },
+      { id: 'c3', name: 'Екшн-камера', cost: 300, weight: 150, mobility: 10, desc: 'Легка, не боїться води. Для екстриму.' },
+      { id: 'c4', name: 'Бездзеркальна камера', cost: 800, weight: 700, mobility: 4, desc: 'Кіношна картинка, але важка.' },
+    ],
+  },
+  audio: {
+    title: 'Звук (Мікрофон)',
+    icon: <Mic className="w-6 h-6 text-emerald-600" />,
+    items: [
+      { id: 'a1', name: 'Вбудований мікрофон', cost: 0, weight: 0, mobility: 10, desc: 'Ловить шум вітру та відлуння.' },
+      { id: 'a2', name: 'Дротова петличка', cost: 20, weight: 50, mobility: 8, desc: 'Відмінний звук, але обмежує рух.' },
+      { id: 'a3', name: 'Радіосистема', cost: 100, weight: 100, mobility: 9, desc: 'Повна свобода рухів. Чудовий звук.' },
+    ],
+  },
+  stabilization: {
+    title: 'Стабілізація',
+    icon: <Video className="w-6 h-6 text-emerald-600" />,
+    items: [
+      { id: 's1', name: 'З рук (без нічого)', cost: 0, weight: 0, mobility: 10, desc: 'Свобода, але картинка трясеться.' },
+      { id: 's2', name: 'Міні-штатив', cost: 15, weight: 250, mobility: 8, desc: 'Можна поставити на стіл чи пеньок.' },
+      { id: 's3', name: 'Великий штатив', cost: 40, weight: 1200, mobility: 3, desc: 'Статична картинка, незручно носити.' },
+      { id: 's4', name: 'Гімбал', cost: 120, weight: 500, mobility: 6, desc: 'Плавна картинка в русі.' },
+    ],
+  },
+};
+
+const MISSIONS = [
+  {
+    id: 1,
+    title: 'Інтерв\'ю з екологом у кабінеті',
+    description: 'Ви домовилися про інтерв\'ю. Важливо записати розмову максимально якісно, щоб глядачі чітко чули кожне слово без луни.',
+    options: [
+      { text: 'Екшн-камера + вбудований звук', isCorrect: false },
+      { text: 'Смартфон на штативі + радіопетличка', isCorrect: true },
+      { text: 'Дзеркалка в руках без штатива', isCorrect: false },
+    ],
+    explanation: 'Для інтерв\'ю головне — стабільна картинка (потрібен штатив) і чистий звук голосу (радіопетличка впорається найкраще).',
+  },
+  {
+    id: 2,
+    title: 'Репортаж на вітряному сміттєзвалищі',
+    description: 'Ви знімаєте репортаж про сортування сміття просто неба. Дме сильний вітер, навколо пил та шум техніки.',
+    options: [
+      { text: 'Смартфон + мікрофон з хутряним вітрозахистом', isCorrect: true },
+      { text: 'Телефон + звук з навушників AirPods', isCorrect: false },
+      { text: 'Велика камера зі студійним мікрофоном', isCorrect: false },
+    ],
+    explanation: 'Хутряний вітрозахист ("мертва кішка") — єдиний спосіб врятувати звук від вітру. AirPods просто "задує", а велика камера буде незручною.',
+  },
+  {
+    id: 3,
+    title: 'Сплав на байдарках та забір води',
+    description: 'Ви вирушаєте у сплав річкою для перевірки води. Потрібно знімати процес, активно веслуючи двома руками.',
+    options: [
+      { text: 'Дорогий смартфон на селфі-палиці', isCorrect: false },
+      { text: 'Водонепроникна екшн-камера на кріпленні до грудей', isCorrect: true },
+      { text: 'Професійна відеокамера з гімбалом', isCorrect: false },
+    ],
+    explanation: 'Тільки екшн-камера на грудях повністю звільнить ваші руки для веслування і не зламається, якщо на неї потрапить вода.',
+  },
+];
+
+export default function App() {
+  const [activeTab, setActiveTab] = useState('builder');
+
+  return (
+    <div className="min-h-screen bg-stone-50 font-sans text-stone-800 selection:bg-emerald-200">
+      <header className="bg-emerald-800 text-white shadow-lg border-b-4 border-emerald-500">
+        <div className="max-w-5xl mx-auto px-4 py-8 text-center">
+          <div className="flex justify-center items-center gap-3 mb-4">
+            <Leaf className="w-10 h-10 text-emerald-400" />
+            <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight">Лабораторія Екоблогера</h1>
+          </div>
+          <p className="text-emerald-100/90 text-lg md:text-xl max-w-2xl mx-auto mb-8">
+            Підберіть ідеальне обладнання для зйомок природи та перевірте свої навички у симуляторі!
+          </p>
+          
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <button 
+              onClick={() => setActiveTab('builder')}
+              className={`px-8 py-3 rounded-full font-bold text-lg transition-all shadow-md ${
+                activeTab === 'builder' 
+                  ? 'bg-white text-emerald-900 scale-105' 
+                  : 'bg-emerald-700 text-emerald-50 hover:bg-emerald-600'
+              }`}
+            >
+              🛠 Конструктор набору
+            </button>
+            <button 
+              onClick={() => setActiveTab('simulator')}
+              className={`px-8 py-3 rounded-full font-bold text-lg transition-all shadow-md ${
+                activeTab === 'simulator' 
+                  ? 'bg-white text-emerald-900 scale-105' 
+                  : 'bg-emerald-700 text-emerald-50 hover:bg-emerald-600'
+              }`}
+            >
+              🎮 Симулятор місій
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-6xl mx-auto px-4 py-10">
+        {activeTab === 'builder' ? <KitBuilder /> : <ScenarioSimulator />}
+      </main>
+    </div>
+  );
+}
+
+function KitBuilder() {
+  const [selections, setSelections] = useState({
+    camera: EQUIPMENT_DATA.camera.items[0],
+    audio: EQUIPMENT_DATA.audio.items[0],
+    stabilization: EQUIPMENT_DATA.stabilization.items[0],
+  });
+
+  const handleSelect = (category, item) => {
+    setSelections(prev => ({ ...prev, [category]: item }));
+  };
+
+  const totalCost = selections.camera.cost + selections.audio.cost + selections.stabilization.cost;
+  const totalWeight = selections.camera.weight + selections.audio.weight + selections.stabilization.weight;
+  const avgMobility = Math.round((selections.camera.mobility + selections.audio.mobility + selections.stabilization.mobility) / 3);
+
+  let conclusion = "";
+  if (totalWeight < 600) conclusion = "Ідеально для активних походів! Цей набір легкий і мобільний.";
+  else if (totalWeight > 1500) conclusion = "Важкувато. Цей набір краще підходить для стаціонарної зйомки.";
+  else conclusion = "Збалансований набір. Підійде для більшості екологічних сюжетів.";
+
+  return (
+    <div className="flex flex-col lg:flex-row gap-8 items-start animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="w-full lg:w-2/3 space-y-8">
+        {Object.entries(EQUIPMENT_DATA).map(([categoryKey, categoryData]) => (
+          <div key={categoryKey} className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-emerald-100">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-3 bg-emerald-100 rounded-xl">{categoryData.icon}</div>
+              <h2 className="text-2xl font-bold text-emerald-950">{categoryData.title}</h2>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {categoryData.items.map(item => {
+                const isSelected = selections[categoryKey].id === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleSelect(categoryKey, item)}
+                    className={`text-left p-5 rounded-2xl border-2 transition-all duration-200 group ${
+                      isSelected 
+                        ? 'border-emerald-500 bg-emerald-50 shadow-md scale-[1.02]' 
+                        : 'border-stone-200 bg-white hover:border-emerald-300 hover:bg-stone-50'
+                    }`}
+                  >
+                    <div className="flex justify-between items-start mb-2">
+                      <span className={`font-bold text-lg ${isSelected ? 'text-emerald-900' : 'text-stone-700'}`}>
+                        {item.name}
+                      </span>
+                      <span className={`font-bold ${isSelected ? 'text-emerald-700' : 'text-stone-500'}`}>
+                        ${item.cost}
+                      </span>
+                    </div>
+                    <p className="text-sm text-stone-500 mb-4 line-clamp-2">{item.desc}</p>
+                    <div className="flex space-x-4 text-xs font-semibold text-stone-400">
+                      <span className="flex items-center gap-1">⚖️ {item.weight}г</span>
+                      <span className="flex items-center gap-1">🏃 Мобільність: {item.mobility}/10</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="w-full lg:w-1/3 bg-gradient-to-br from-emerald-900 to-emerald-950 text-white rounded-3xl p-8 shadow-xl lg:sticky top-8">
+        <h2 className="text-2xl font-bold mb-8 flex items-center gap-2">
+          <Smartphone className="w-6 h-6 text-emerald-400" />
+          Підсумок набору
+        </h2>
+        
+        <div className="space-y-8">
+          <div className="bg-emerald-800/50 p-5 rounded-2xl border border-emerald-700/50">
+            <p className="text-emerald-300/80 text-sm font-semibold uppercase tracking-wider mb-1">Загальний бюджет</p>
+            <p className="text-5xl font-black text-white">${totalCost}</p>
+          </div>
+          
+          <div>
+            <div className="flex justify-between items-end mb-2">
+              <p className="text-emerald-300/80 text-sm font-semibold uppercase tracking-wider">Вага техніки</p>
+              <p className="text-xl font-bold">{totalWeight} г</p>
+            </div>
+            <div className="w-full bg-emerald-950 rounded-full h-3 overflow-hidden">
+              <div 
+                className={`h-full rounded-full transition-all duration-500 ${
+                  totalWeight > 1500 ? 'bg-red-500' : totalWeight > 800 ? 'bg-yellow-400' : 'bg-emerald-400'
+                }`} 
+                style={{ width: `${Math.min((totalWeight / 2000) * 100, 100)}%` }}
+              />
+            </div>
+          </div>
+          
+          <div>
+             <div className="flex justify-between items-end mb-2">
+              <p className="text-emerald-300/80 text-sm font-semibold uppercase tracking-wider">Мобільність</p>
+              <p className="text-xl font-bold">{avgMobility} / 10</p>
+            </div>
+            <div className="w-full bg-emerald-950 rounded-full h-3 overflow-hidden">
+              <div 
+                className="bg-blue-400 h-full rounded-full transition-all duration-500" 
+                style={{ width: `${(avgMobility / 10) * 100}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="bg-emerald-400/10 p-5 rounded-2xl border border-emerald-400/20 mt-8 backdrop-blur-sm">
+            <h3 className="font-bold text-emerald-300 mb-2 flex items-center gap-2">
+               Висновок експерта
+            </h3>
+            <p className="text-emerald-50 leading-relaxed">{conclusion}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ScenarioSimulator() {
+  const [currentMission, setCurrentMission] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [isFinished, setIsFinished] = useState(false);
+
+  const mission = MISSIONS[currentMission];
+
+  const handleOptionClick = (index, isCorrect) => {
+    if (selectedOption !== null) return;
+    setSelectedOption(index);
+    if (isCorrect) setScore(prev => prev + 1);
+  };
+
+  const nextMission = () => {
+    if (currentMission < MISSIONS.length - 1) {
+      setCurrentMission(prev => prev + 1);
+      setSelectedOption(null);
+    } else {
+      setIsFinished(true);
+    }
+  };
+
+  const restartSimulator = () => {
+    setCurrentMission(0);
+    setSelectedOption(null);
+    setScore(0);
+    setIsFinished(false);
+  };
+
+  if (isFinished) {
+    return (
+      <div className="max-w-2xl mx-auto bg-white rounded-3xl p-10 text-center shadow-lg border border-emerald-100 animate-in zoom-in-95 duration-500">
+        <div className="w-24 h-24 mx-auto bg-emerald-100 rounded-full flex items-center justify-center mb-6">
+          <Leaf className="w-12 h-12 text-emerald-600" />
+        </div>
+        <h2 className="text-4xl font-extrabold text-emerald-950 mb-4">Симуляцію завершено!</h2>
+        
+        <p className="text-2xl mb-4 text-stone-600">
+          Ваш результат: <span className="font-bold text-emerald-600">{score} з {MISSIONS.length}</span> правильних рішень.
+        </p>
+        
+        <p className="text-lg text-stone-500 mb-10 max-w-md mx-auto leading-relaxed">
+          {score === MISSIONS.length 
+            ? "Чудова робота! Ви справжній профі, готові знімати еко-контент у будь-яких умовах." 
+            : "Гарна спроба! Перегляньте теорію ще раз, щоб краще розуміти, як техніка поводиться на природі."}
+        </p>
+        
+        <button 
+          onClick={restartSimulator}
+          className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 px-10 rounded-full text-lg transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mx-auto"
+        >
+          <RefreshCw className="w-5 h-5" />
+          Спробувати ще раз
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="mb-8 flex justify-between items-center text-sm font-bold text-stone-400 uppercase tracking-widest bg-white p-4 rounded-2xl shadow-sm border border-stone-100">
+        <span className="flex items-center gap-2">
+           <Video className="w-4 h-4" />
+           Місія {currentMission + 1} / {MISSIONS.length}
+        </span>
+        <span className="text-emerald-600">Рахунок: {score}</span>
+      </div>
+
+      <div className="bg-white rounded-3xl overflow-hidden shadow-md border border-stone-200">
+        <div className="bg-emerald-900 p-8 md:p-10 text-white relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
+            <Leaf className="w-48 h-48" />
+          </div>
+          <h2 className="text-3xl font-bold mb-4 relative z-10">{mission.title}</h2>
+          <p className="text-emerald-100 text-lg leading-relaxed max-w-2xl relative z-10">
+            {mission.description}
+          </p>
+        </div>
+        
+        <div className="p-8 md:p-10 bg-stone-50">
+          <h3 className="font-bold text-stone-500 uppercase tracking-wider mb-6 text-sm">
+            Оберіть оптимальне обладнання:
+          </h3>
+          
+          <div className="space-y-4">
+            {mission.options.map((option, index) => {
+              const isSelected = selectedOption === index;
+              const isRevealed = selectedOption !== null;
+              
+              let btnStyle = "bg-white border-stone-200 text-stone-700 hover:border-emerald-300 hover:bg-stone-100";
+              
+              if (isRevealed) {
+                if (isSelected && option.isCorrect) {
+                  btnStyle = "bg-emerald-100 border-emerald-500 text-emerald-900 shadow-sm";
+                } else if (isSelected && !option.isCorrect) {
+                  btnStyle = "bg-red-50 border-red-500 text-red-900";
+                } else if (!isSelected && option.isCorrect) {
+                  btnStyle = "bg-emerald-50 border-emerald-300 text-emerald-800 opacity-80"; // show correct answer
+                } else {
+                  btnStyle = "bg-stone-50 border-stone-200 text-stone-400 opacity-50";
+                }
+              }
+
+              return (
+                <button
+                  key={index}
+                  onClick={() => handleOptionClick(index, option.isCorrect)}
+                  disabled={isRevealed}
+                  className={`w-full text-left p-5 rounded-2xl border-2 transition-all duration-300 font-semibold text-lg flex items-center justify-between ${btnStyle}`}
+                >
+                  {option.text}
+                  {isRevealed && isSelected && option.isCorrect && <CheckCircle2 className="w-6 h-6 text-emerald-600" />}
+                  {isRevealed && isSelected && !option.isCorrect && <XCircle className="w-6 h-6 text-red-500" />}
+                </button>
+              );
+            })}
+          </div>
+
+          {selectedOption !== null && (
+            <div className={`mt-8 p-6 rounded-2xl border animate-in zoom-in-95 duration-300 ${
+              mission.options[selectedOption].isCorrect 
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-900' 
+                : 'bg-red-50 border-red-200 text-red-900'
+            }`}>
+              <div className="flex items-start gap-4">
+                <div className="mt-1">
+                  {mission.options[selectedOption].isCorrect 
+                    ? <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                    : <XCircle className="w-8 h-8 text-red-500" />
+                  }
+                </div>
+                <div>
+                  <h4 className="font-bold text-xl mb-2">
+                    {mission.options[selectedOption].isCorrect ? 'Абсолютно вірно!' : 'Не найкращий вибір.'}
+                  </h4>
+                  <p className="text-stone-700 leading-relaxed mb-6">{mission.explanation}</p>
+                  
+                  <button 
+                    onClick={nextMission}
+                    className={`font-bold py-3 px-8 rounded-full transition-all flex items-center gap-2 ${
+                      mission.options[selectedOption].isCorrect
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                        : 'bg-red-600 hover:bg-red-700 text-white'
+                    }`}
+                  >
+                    {currentMission < MISSIONS.length - 1 ? 'Наступна місія' : 'Переглянути результати'}
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
